@@ -38,6 +38,7 @@ static NSString * const kSFOAuthEndPointAuthorize               = @"/services/oa
 static NSString * const kSFOAuthEndPointToken                   = @"/services/oauth2/token";        // token refresh flow
 
 static NSString * const kSFOAuthAccessToken                     = @"access_token";
+static NSString * const kSFOAuthCSRFToken                       = @"csrf_token";
 static NSString * const kSFOAuthClientId                        = @"client_id";
 static NSString * const kSFOAuthDisplay                         = @"display";
 static NSString * const kSFOAuthDisplayTouch                    = @"touch";
@@ -323,10 +324,11 @@ static NSString * const kHttpPostContentType                    = @"application/
 	[request setValue:kHttpPostContentType forHTTPHeaderField:kHttpHeaderContentType];
     [request setHTTPShouldHandleCookies:NO];
     
-    NSMutableString *params = [[NSMutableString alloc] initWithFormat:@"%@=%@&%@=%@&%@=%@",
+    NSMutableString *params = [[NSMutableString alloc] initWithFormat:@"%@=%@&%@=%@&%@=%@&%@=%@",
                                                                       kSFOAuthFormat, kSFOAuthFormatJson,
                                                                       kSFOAuthRedirectUri, self.credentials.redirectUri,
-                                                                      kSFOAuthClientId, self.credentials.clientId];
+                                                                      kSFOAuthClientId, self.credentials.clientId,
+                                                                      kSFOAuthCSRFToken, @"true"];
     NSMutableString *logString = [NSMutableString stringWithString:params];
     
     // If an activation code is available (IP bypass flow), then provide the activation code in the request
@@ -456,6 +458,7 @@ static NSString * const kHttpPostContentType                    = @"application/
 - (void)updateCredentials:(NSDictionary*)params forTokenRefresh:(BOOL)tokenRefresh
 {
     self.credentials.accessToken    = [params objectForKey:kSFOAuthAccessToken];
+    self.credentials.csrfToken      = [params objectForKey:kSFOAuthCSRFToken];
     self.credentials.issuedAt       = [[self class] timestampStringToDate:[params objectForKey:kSFOAuthIssuedAt]];
     
     if (!tokenRefresh) {
